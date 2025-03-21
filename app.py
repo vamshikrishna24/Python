@@ -16,27 +16,22 @@ app.add_middleware(
 @app.get("/get_audio_url")
 async def get_audio_url(youtube_url: str):
     try:
-        # ydl_opts = {
-        #     "format": "bestaudio/best",
-        #     "quiet": True,
-        #     "extract_flat": False,
-        #     "cookiefile": "cookies.txt"
-        # }
-
         ydl_opts = {
-            'format': 'bestaudio',
-             "quiet": True,
+            "format": "bestaudio/best",
+            "quiet": True,
             "extract_flat": False,
             "cookiefile": "cookies.txt",
-            'postprocessors': [{
-                'key': 'FFmpegExtractAudio',
-                'preferredcodec': 'mp3',
-                'preferredquality': '192',
-            }],
+            "noplaylist": True,
         }
+
         with YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(youtube_url, download=False)
-            audio_url = info.get("url", None)
+            formats = info.get('formats', [])
+            audio_url = None
+            for f in formats:
+                if f.get('vcodec') == 'none' and f.get('acodec') != 'none':
+                    audio_url = f.get('url')
+                    break
 
         if audio_url:
             return {"audio_url": audio_url}
