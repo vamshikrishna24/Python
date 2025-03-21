@@ -13,7 +13,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.get("/get_audio_url/")
+@app.get("/get_audio_url")
 async def get_audio_url(youtube_url: str):
     try:
         ydl_opts = {
