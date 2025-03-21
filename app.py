@@ -19,7 +19,8 @@ async def get_audio_url(youtube_url: str):
         ydl_opts = {
             "format": "bestaudio/best",
             "quiet": True,
-            "extract_flat": False
+            "extract_flat": False,
+            "cookiefile": "cookies.txt"
         }
 
         with YoutubeDL(ydl_opts) as ydl:
