@@ -1,10 +1,8 @@
 
-import re
 from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from yt_dlp import YoutubeDL
-import httpx
 import requests
 
 app = FastAPI()
