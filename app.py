@@ -1,6 +1,10 @@
-from fastapi import FastAPI
+
+import re
+from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
-from yt_dlp import YoutubeDL  # Use yt-dlp
+from fastapi.responses import StreamingResponse
+from yt_dlp import YoutubeDL
+import httpx
 import requests
 
 app = FastAPI()
@@ -17,42 +21,69 @@ app.add_middleware(
 @app.get("/get_audio_url")
 async def get_audio_url(youtube_url: str):
     try:
-        # Options for yt-dlp
         ydl_opts = {
-            "format": "bestaudio/best",  # Get the best audio quality
-            "quiet": True,  # Suppress output
-            "extract_flat": False,  # Ensure full metadata is extracted
-            "cookiefile": "cookies.txt",  # Optional: Use cookies if needed
-            "noplaylist": True,  # Ensure only single videos are processed
+            "format": "bestaudio/best",
+            "quiet": True,
+            "extract_flat": False,
+            "cookiefile": "cookies.txt",
+            "noplaylist": True,
         }
 
-        # Extract audio URL using yt-dlp
         with YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(youtube_url, download=False)
             formats = info.get('formats', [])
             audio_url = None
-
-            # Find the best audio-only format
             for f in formats:
                 if f.get('vcodec') == 'none' and f.get('acodec') != 'none':
                     audio_url = f.get('url')
                     break
 
         if audio_url:
-            # Add required headers for the audio URL to be playable
-            headers = {
-                "Referer": "https://www.youtube.com/",  # Required by YouTube
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3",  # Mimic a browser
-            }
-
-            # Verify that the URL is playable by making a test request
-            response = requests.get(audio_url, headers=headers, stream=True)
-            if response.status_code == 200:
-                return {"audio_url": audio_url, "headers": headers}  # Return the URL and headers
-            else:
-                return {"error": "Audio URL is not playable", "status_code": response.status_code}
+            return {"audio_url": audio_url}
         else:
             return {"error": "Audio URL not found"}
     
     except Exception as e:
         return {"error": str(e)}
+    
+
+
+def get_audio_stream(url):
+    """ Generator function to stream audio in chunks """
+    ydl_opts = {
+            "format": "bestaudio/best",
+            "quiet": True,
+            "extract_flat": False,
+            "cookiefile": "cookies.txt",
+            "noplaylist": True,
+        }
+
+    with YoutubeDL(ydl_opts) as ydl:
+        info = ydl.extract_info(url, download=False)
+        formats = info.get("formats", [])
+        
+        audio_url = None
+        for f in formats:
+            if f.get("vcodec") == "none" and f.get("acodec") != "none":
+                audio_url = f.get("url")
+                break
+
+    if not audio_url:
+        raise Exception("Audio URL not found")
+
+    # ✅ FIX: The function must return an actual generator, not a function reference
+    def iter_chunks():
+        with requests.get(audio_url, stream=True) as r:
+            r.raise_for_status()  # Ensures request was successful
+            for chunk in r.iter_content(chunk_size=1024 * 256):  # 256KB chunks
+                if chunk:
+                    yield chunk
+
+    return iter_chunks()  # ✅ Call the function to return a generator
+
+@app.get("/stream_audio")
+async def stream_audio(youtube_url: str):
+    try:
+        return StreamingResponse(get_audio_stream(youtube_url), media_type="audio/mpeg")
+    except Exception as e:
+        return Response(f"Error: {str(e)}", status_code=500)
