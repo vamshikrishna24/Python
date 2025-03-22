@@ -36,6 +36,7 @@ def download_audio(youtube_url: str):
         "noplaylist": True,
         "force_overwrites": True,
         "no-cache-dir": True,
+        "cookiefile": "cookies.txt"
     }
 
     with YoutubeDL(ydl_opts) as ydl:
