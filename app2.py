@@ -26,7 +26,6 @@ async def get_audio_url(youtube_url: str):
             "extract_flat": False,
             "cookiefile": "cookies.txt",
             "noplaylist": True,
-            "force_generic_extractor": True, 
             "extractor_args": {"youtube": {"music": True}},
         }
 
