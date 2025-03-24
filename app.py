@@ -1,10 +1,10 @@
 import time
-from fastapi import FastAPI, Request, Response
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from yt_dlp import YoutubeDL
 import os
-import uuid
+import random
 
 app = FastAPI()
 
@@ -16,6 +16,14 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+
+user_agents = [
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36",
+    "Mozilla/5.0 (Linux; Android 10) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.72 Mobile Safari/537.36",
+]
 
 DOWNLOAD_PATH = "downloads/audio.mp3"
 
@@ -36,7 +44,8 @@ def download_audio(youtube_url: str):
         "noplaylist": True,
         "force_overwrites": True,
         "no-cache-dir": True,
-        "cookiefile": "cookies.txt"
+        "cookiefile": "cookies.txt",
+        "http_headers": {"User-Agent": random.choice(user_agents)}
     }
 
     with YoutubeDL(ydl_opts) as ydl:
