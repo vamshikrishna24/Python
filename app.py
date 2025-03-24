@@ -19,15 +19,9 @@ app.add_middleware(
 
 
 
-user_agents = [
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36",
-    "Mozilla/5.0 (Linux; Android 10) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.72 Mobile Safari/537.36",
-]
-
 DOWNLOAD_PATH = "downloads/audio.mp3"
 
-def download_audio(youtube_url: str):
+def download_audio(youtube_url: str,max_retries=3):
     """Download audio from YouTube and overwrite the file."""
     # Delete old file before downloading
     if os.path.exists(DOWNLOAD_PATH):
@@ -45,17 +39,29 @@ def download_audio(youtube_url: str):
         "force_overwrites": True,
         "no-cache-dir": True,
         "cookiefile": "cookies.txt",
-        "http_headers": {"User-Agent": random.choice(user_agents)}
+        "retries": max_retries,
+        "socket_timeout": 30,
+        "extractor_retries": 3,
     }
 
-    with YoutubeDL(ydl_opts) as ydl:
-        ydl.download([youtube_url])
-
-    # Rename the downloaded file to the fixed path
-    if os.path.exists(temp_path):
-        os.rename(temp_path, DOWNLOAD_PATH)
-
-    return DOWNLOAD_PATH
+    for attempt in range(max_retries):
+        try:
+            with YoutubeDL(ydl_opts) as ydl:
+                ydl.download([youtube_url])
+            
+            if os.path.exists(temp_path):
+                if os.path.exists(DOWNLOAD_PATH):
+                    os.remove(DOWNLOAD_PATH)
+                os.rename(temp_path, DOWNLOAD_PATH)
+                return DOWNLOAD_PATH
+            
+        except Exception as e:
+            if attempt == max_retries - 1:
+                raise
+            wait_time = (2 ** attempt) + random.random()
+            time.sleep(wait_time)
+    
+    raise Exception("Max retries exceeded")
 
 @app.get("/stream_audio")
 async def stream_audio(youtube_url: str):
