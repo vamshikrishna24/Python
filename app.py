@@ -18,21 +18,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-USER_AGENTS = [
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36",
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36",
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:120.0) Gecko/20100101 Firefox/120.0",
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:115.0) Gecko/20100101 Firefox/115.0",
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:116.0) Gecko/20100101 Firefox/116.0",
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 13_0) AppleWebKit/537.36 (KHTML, like Gecko) Version/16.0 Safari/537.36",
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 12_0) AppleWebKit/537.36 (KHTML, like Gecko) Version/15.0 Safari/537.36",
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0",
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36 Edg/119.0.0.0",
-]
 
 DOWNLOAD_PATH = "downloads/audio.mp3"
-
 
 
 def download_audio(youtube_url: str,max_retries=3):
@@ -49,6 +36,7 @@ def download_audio(youtube_url: str,max_retries=3):
 
     ydl_opts = {
         "format": "bestaudio/best",
+        "quiet":True,
         "audio_format": "mp3",
         "outtmpl": temp_path,  # Use temporary file
         "noplaylist": True,
@@ -59,14 +47,8 @@ def download_audio(youtube_url: str,max_retries=3):
         "socket_timeout": 30,
         "extractor_retries": 3,
         "sleep_interval": 5,
-        "http_headers": {
-            "User-Agent": random.choice(USER_AGENTS),
-            "Accept-Language": "en-US,en;q=0.5",
-            "Referer": "https://www.youtube.com/",
-        },
         "ignoreerrors": True,
         "extract_flat": False,
-        "verbose":True
     }
 
     for attempt in range(max_retries):
