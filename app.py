@@ -67,12 +67,6 @@ def download_audio(youtube_url: str,max_retries=3):
         },
         "ignoreerrors": True,
         "extract_flat": False,
-        "extractor_args": {
-            "youtube": {
-                "skip": ["dash", "hls"],  # Skip adaptive formats
-                "player_client": ["android", "web", "default"],  # Try different APIs
-                }
-        },
     }
 
     for attempt in range(max_retries):
