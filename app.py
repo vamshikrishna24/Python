@@ -5,6 +5,7 @@ from fastapi.responses import FileResponse
 from yt_dlp import YoutubeDL
 import os
 import random
+import shutil
 
 app = FastAPI()
 
@@ -20,6 +21,11 @@ app.add_middleware(
 
 
 DOWNLOAD_PATH = "downloads/audio.mp3"
+
+COOKIES_FILE = "cookies.txt"
+COOKIES_COPY = "cookies_copy.txt"
+
+shutil.copy(COOKIES_FILE, COOKIES_COPY)
 
 def download_audio(youtube_url: str,max_retries=3):
     """Download audio from YouTube and overwrite the file."""
@@ -38,7 +44,7 @@ def download_audio(youtube_url: str,max_retries=3):
         "noplaylist": True,
         "force_overwrites": True,
         "no-cache-dir": True,
-        "cookiefile": "cookies.txt",
+        "cookiefile": COOKIES_COPY,
         "retries": max_retries,
         "socket_timeout": 30,
         "extractor_retries": 3,
