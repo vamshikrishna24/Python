@@ -49,7 +49,7 @@ def download_audio(youtube_url: str,max_retries=3):
 
     ydl_opts = {
         "format": "bestaudio/best",
-        "quiet": True,
+        "quiet": False,
         "audio_format": "mp3",
         "outtmpl": temp_path,  # Use temporary file
         "noplaylist": True,
@@ -59,10 +59,17 @@ def download_audio(youtube_url: str,max_retries=3):
         "retries": max_retries,
         "socket_timeout": 30,
         "extractor_retries": 3,
-        "http_headers": {"user-agent": random.choice(USER_AGENTS)},
+        "http_headers": {
+            "User-Agent": random.choice(USER_AGENTS),
+            "Accept-Language": "en-US,en;q=0.5",
+            "Referer": "https://www.youtube.com/",
+        },
         "geo_bypass": True,
         "ignoreerrors": True,
-        "verbose": True
+        "verbose": True,
+        "extract_flat": False,
+        "throttledratelimit": 1000000,
+        "sleep_interval": 5,
     }
 
     for attempt in range(max_retries):
