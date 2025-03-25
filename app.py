@@ -33,12 +33,13 @@ USER_AGENTS = [
 
 DOWNLOAD_PATH = "downloads/audio.mp3"
 
-COOKIES_FILE = "cookies.txt"
-COOKIES_COPY = "cookies_copy.txt"
 
-shutil.copy(COOKIES_FILE, COOKIES_COPY)
 
 def download_audio(youtube_url: str,max_retries=3):
+    COOKIES_FILE = "cookies.txt"
+    COOKIES_COPY = "cookies_copy.txt"
+
+    shutil.copy(COOKIES_FILE, COOKIES_COPY)
     """Download audio from YouTube and overwrite the file."""
     # Delete old file before downloading
     if os.path.exists(DOWNLOAD_PATH):
@@ -49,7 +50,6 @@ def download_audio(youtube_url: str,max_retries=3):
     ydl_opts = {
         "format": "bestaudio/best",
         "quiet": True,
-        "extract_audio": True,
         "audio_format": "mp3",
         "outtmpl": temp_path,  # Use temporary file
         "noplaylist": True,
@@ -60,6 +60,9 @@ def download_audio(youtube_url: str,max_retries=3):
         "socket_timeout": 30,
         "extractor_retries": 3,
         "http_headers": {"user-agent": random.choice(USER_AGENTS)},
+        "geo_bypass": True,
+        "ignoreerrors": True,
+        "verbose": True
     }
 
     for attempt in range(max_retries):
