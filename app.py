@@ -49,7 +49,6 @@ def download_audio(youtube_url: str,max_retries=3):
 
     ydl_opts = {
         "format": "bestaudio/best",
-        "quiet": True,
         "audio_format": "mp3",
         "outtmpl": temp_path,  # Use temporary file
         "noplaylist": True,
@@ -67,6 +66,7 @@ def download_audio(youtube_url: str,max_retries=3):
         },
         "ignoreerrors": True,
         "extract_flat": False,
+        "verbose":True
     }
 
     for attempt in range(max_retries):
