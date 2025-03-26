@@ -49,6 +49,7 @@ def download_audio(youtube_url: str,max_retries=3):
         "sleep_interval": 5,
         "ignoreerrors": True,
         "extract_flat": False,
+        "extractor_args": {"youtube": {"player_client": ["web_safari"]}}, 
     }
 
     for attempt in range(max_retries):
